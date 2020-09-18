@@ -1,4 +1,5 @@
 use std::fmt;
+use std::collections::HashSet;
 use std::collections::HashMap;
 
 #[derive(Copy, Clone, Debug, PartialEq)]
@@ -51,7 +52,7 @@ impl Game {
         let active_piece: &Piece = self.board.get(&_from_pos).unwrap();
 
         // Shuffle Pieces if possible
-        if active_piece.get_possible_moves().unwrap().contains(&_to_pos) && active_piece.color != self.active_color {
+        if active_piece.get_possible_moves().unwrap().contains(&_to_pos) && active_piece.color != self.active_color { // Ändra till en match
             self.board.remove(&_to_pos);
             let piece: Position = self.board.remove(&_from_pos);
             self.board.insert(piece, _to);
@@ -62,7 +63,16 @@ impl Game {
                 Color::Black => Color::White
             }
         }
-        None
+        None;
+
+        match active_piece.get_possible_moves() {
+            Some(moves) => 
+                match moves.get(&_to_pos) {
+                    Some(piece) => None,
+                    None => None
+                },
+            None => None 
+        }
     }
 
     /// Set the piece type that a peasant becames following a promotion.
@@ -133,7 +143,7 @@ impl Position {
 
             // Loops through characters
             for _char in _pos.chars() {
-                let _possible_number = _char.to_digit(10); // Behöver begränsas från 1 - 8
+                let _possible_number = _char.to_digit(10);
                 
                 // Checks if character is a number 0-9, if not, set _row to character if character is a-h
                 match _possible_number {
@@ -168,7 +178,7 @@ struct Piece {
 }
 
 impl Piece {
-    fn get_possible_moves(&self) -> Option<Vec<String>> {
+    fn get_possible_moves(&self) -> Option<HashSet<Position>> {
         None
     }
 }
