@@ -1,5 +1,4 @@
 use std::fmt;
-use std::error::Error;
 use std::collections::HashMap;
 
 #[derive(Copy, Clone, Debug, PartialEq)]
@@ -36,19 +35,33 @@ impl Game {
     /// move a piece and return the resulting state of the game.
     pub fn make_move(&mut self, _from: String, _to: String) -> Option<GameState> {
 
-        // Convert String to Position
-        let _from_pos: Position = Position::new(_from);
-        
+        // Convert String _from to Position
+        let _from_pos: Position = match Position::new(_from) {
+            Ok(piece) => piece,
+            Err(e) => println!("{:?}", e)
+        };
 
+        // Convert String _to to Position
+        let _to_pos: Position = match Position::new(_to) {
+            Ok(piece) => piece,
+            Err(e) => println!("{:?}", e)
+        };
+        
         // Get reference to Piece at Position
-        let _active: &Piece = self.board.get(&_from_pos).unwrap();
+        let active_piece: &Piece = self.board.get(&_from_pos).unwrap();
 
         // Shuffle Pieces if possible
-        /* if _active.get_possible_moves().unwrap().contains(&_to) && _active.color != active_color {
-            self.board.remove(&_to);
-            let piece = self.board.remove(&_from);
+        if active_piece.get_possible_moves().unwrap().contains(&_to_pos) && active_piece.color != self.active_color {
+            self.board.remove(&_to_pos);
+            let piece: Position = self.board.remove(&_from_pos);
             self.board.insert(piece, _to);
-        } */
+
+            // Switches active color
+            self.active_color = match self.active_color {
+                Color::White => Color::Black,
+                Color::Black => Color::White
+            }
+        }
         None
     }
 
@@ -109,7 +122,7 @@ struct Position {
 }
 
 impl Position {
-    fn new(_pos: String) -> Result<Self, Box<dyn Error>> {
+    fn new(_pos: String) -> Result<Self, &'static str> {
 
         // Checks if String is a valid character length
         if _pos.chars().count() == 2 {
@@ -120,26 +133,27 @@ impl Position {
 
             // Loops through characters
             for _char in _pos.chars() {
-                let _possible_number = _char.to_digit(10);
+                let _possible_number = _char.to_digit(10); // Behöver begränsas från 1 - 8
                 
                 // Checks if character is a number 0-9, if not, set _row to character if character is a-h
                 match _possible_number {
-                    Ok(digit) => _column = digit as i8,
-                    Err(e) => 
+                    Some(digit) =>
+                        if digit + 1 <= 8 {
+                            _column = (digit + 1) as i8
+                        },
+                    None => 
                         if _row == Default::default() && _char.to_digit(18).unwrap() - 10 >= 0 {
-                            _row = _char.to_uppercase();
-                        } else {
-                            None;
+                            _row = _char;
                         }
                 };
             }
 
             // Checks if both _row and _column has gotten values
             if _row != Default::default() || _column != Default::default() {
-                return Ok(Self {
+                Self {
                     row: _row, 
                     column: _column 
-                });
+                };
             }
         }
 
@@ -154,7 +168,7 @@ struct Piece {
 }
 
 impl Piece {
-    fn get_possible_moves(&self, _postion: String) -> Option<Vec<String>> {
+    fn get_possible_moves(&self) -> Option<Vec<String>> {
         None
     }
 }
