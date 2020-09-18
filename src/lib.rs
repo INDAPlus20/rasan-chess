@@ -37,42 +37,61 @@ impl Game {
     pub fn make_move(&mut self, _from: String, _to: String) -> Option<GameState> {
 
         // Convert String _from to Position
-        let _from_pos: Position = match Position::new(_from) {
-            Ok(piece) => piece,
-            Err(e) => println!("{:?}", e)
+        let _from_pos: Position; 
+        match Position::new(_from) {
+            Ok(piece) => _from_pos = piece,
+            Err(e) => {
+                println!("{:?}", e);
+                return Some(self.state);
+            }
         };
 
         // Convert String _to to Position
-        let _to_pos: Position = match Position::new(_to) {
-            Ok(piece) => piece,
-            Err(e) => println!("{:?}", e)
-        };
-        
-        // Get reference to Piece at Position
-        let active_piece: &Piece = self.board.get(&_from_pos).unwrap();
-
-        // Shuffle Pieces if possible
-        if active_piece.get_possible_moves().unwrap().contains(&_to_pos) && active_piece.color != self.active_color { // Ändra till en match
-            self.board.remove(&_to_pos);
-            let piece: Position = self.board.remove(&_from_pos);
-            self.board.insert(piece, _to);
-
-            // Switches active color
-            self.active_color = match self.active_color {
-                Color::White => Color::Black,
-                Color::Black => Color::White
+        let _to_pos: Position; 
+        match Position::new(_to) {
+            Ok(piece) => _to_pos = piece,
+            Err(e) => {
+                println!("{:?}", e);
+                return Some(self.state);
             }
-        }
-        None;
+        };
 
-        match active_piece.get_possible_moves() {
-            Some(moves) => 
-                match moves.get(&_to_pos) {
-                    Some(piece) => None,
-                    None => None
+        // Get piece at position
+        match self.board.get(&_from_pos) {
+            Some(_piece_ref) => 
+
+                // Check if piece is of correct color
+                if _piece_ref.color != self.active_color {
+
+                    // Get possible moves
+                    match _piece_ref.get_possible_moves() {
+                        Some(moves) => 
+
+                            // Check if desired move is possible
+                            match moves.get(&_to_pos) {
+                                Some(_piece_pos) => {
+                                
+                                    // Moves piece and possibly removes another piece
+                                    self.board.remove(&_to_pos);
+                                    let _piece: Piece = self.board.remove(&_from_pos).unwrap();
+                                    self.board.insert(_to_pos, _piece);
+
+                                    // Switches active color
+                                    self.active_color = match self.active_color {
+                                        Color::White => Color::Black,
+                                        Color::Black => Color::White
+                                    }
+                                },
+                                None => println!("Illegal move")
+                            },
+                        None => println!("No possible moves")
+                    };
                 },
-            None => None 
-        }
+            None => println!("No piece at speficied position")
+        };
+
+        // Check game state
+        return None;
     }
 
     /// Set the piece type that a peasant becames following a promotion.
@@ -156,7 +175,7 @@ impl Position {
                             _row = _char;
                         }
                 };
-            }
+            };
 
             // Checks if both _row and _column has gotten values
             if _row != Default::default() || _column != Default::default() {
@@ -164,7 +183,7 @@ impl Position {
                     row: _row, 
                     column: _column 
                 };
-            }
+            };
         }
 
         // Returns error if String is not valid
