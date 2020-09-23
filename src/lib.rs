@@ -1,13 +1,14 @@
 use std::fmt;
-use std::collections::HashSet;
 use std::collections::HashMap;
 
-#[derive(Copy, Clone, Debug, PartialEq)]
-pub enum GameState {
-    InProgress,
-    Check,
-    GameOver
-}
+mod piece;
+mod gamestate;
+
+use piece::position::Position;
+use piece::color::Color;
+use piece::role::Role;
+use piece::Piece;
+use gamestate::GameState;
 
 /* IMPORTANT:
  * - Document well!
@@ -27,9 +28,51 @@ impl Game {
         Game {
             /* initialise board, set active colour to white, ... */
             state: GameState::InProgress,
-            board: HashMap::new(),
+            board: setup_board(),
             active_color: Color::White
         }
+    }
+
+    fn setup_board() -> HashMap<Position, Piece> {
+        let mut board: HashMap<Position, Piece> = HashMap::new();
+
+        // Adds pawns to board
+        for x in 1..9 {
+
+            // Insert white pawns
+            let white_pawn_position = Position {
+                row: 7,
+                column: x
+            };
+
+            board.insert(
+                white_pawn_position,
+                Piece {
+                    color: Color::White,
+                    role: Role::Pawn,
+                    position: white_pawn_position,
+                    has_moved: false
+                }
+            );
+
+            // Insert black pawns
+            let black_pawn_position = Position {
+                row: 2,
+                column: x
+            };
+
+            board.insert(
+                black_pawn_position,
+                Piece {
+                    color: Color::Black,
+                    role: Role::Pawn,
+                    position: black_pawn_position,
+                    has_moved: false
+                }
+            );
+        }
+
+        return board;
     }
 
     /// If the current game state is InProgress and the move is legal, 
@@ -39,7 +82,7 @@ impl Game {
         // Convert String _from to Position
         let _from_pos: Position; 
         match Position::new(_from) {
-            Ok(piece) => _from_pos = piece,
+            Ok(position) => _from_pos = position,
             Err(e) => {
                 println!("{:?}", e);
                 return Some(self.state);
@@ -49,7 +92,7 @@ impl Game {
         // Convert String _to to Position
         let _to_pos: Position; 
         match Position::new(_to) {
-            Ok(piece) => _to_pos = piece,
+            Ok(position) => _to_pos = position,
             Err(e) => {
                 println!("{:?}", e);
                 return Some(self.state);
@@ -64,16 +107,24 @@ impl Game {
                 if _piece_ref.color != self.active_color {
 
                     // Get possible moves
-                    match _piece_ref.get_possible_moves() {
+                    match _piece_ref.get_possible_moves(self.board) {
                         Some(moves) => 
 
                             // Check if desired move is possible
                             match moves.get(&_to_pos) {
                                 Some(_piece_pos) => {
+
+                                    // Check if own king becomes threatened
                                 
                                     // Moves piece and possibly removes another piece
                                     self.board.remove(&_to_pos);
-                                    let _piece: Piece = self.board.remove(&_from_pos).unwrap();
+                                    let mut _piece: piece::Piece = self.board.remove(&_from_pos).unwrap();
+
+                                    // Set has_moved (from original position) to true
+                                    if _piece.has_moved != true {
+                                        _piece.has_moved = true;
+                                    }
+
                                     self.board.insert(_to_pos, _piece);
 
                                     // Switches active color
@@ -90,6 +141,8 @@ impl Game {
             None => println!("No piece at speficied position")
         };
 
+        // Check if king is threatened
+
         // Check game state
         return None;
     }
@@ -101,15 +154,30 @@ impl Game {
 
     /// Get the current game state.
     pub fn get_game_state(&self) -> GameState {
-        self.state
+        return self.state;
     }
     
     /// If a piece is standing on the given tile, return all possible 
     /// new positions of that piece. Don't forget to the rules for check. 
     /// 
     /// (optional) Don't forget to include en passent and castling.
-    pub fn get_possible_moves(&self, _postion: String) -> Option<Vec<String>> {
-        None
+    pub fn get_possible_moves(&self, _position: String) -> Option<Vec<Position>> {
+
+        // Convert String _from to Position
+        let position: Position; 
+        match Position::new(_position) {
+            Ok(position) => position = position,
+            Err(e) => {
+                println!("{:?}", e);
+                return None;
+            }
+        };
+
+        // Check position
+        match self.board.get(&position) {
+            Some(piece) => return piece.get_possible_moves(self.board),
+            None => return None
+        };
     }
 }
 
@@ -129,76 +197,31 @@ impl Game {
 impl fmt::Debug for Game {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         /* build board representation string */
-        
-        write!(f, "")
-    }
-}
-
-// --------------------------
-// ####### PIECE CODE #######
-// --------------------------
-
-#[derive(Hash, Eq, PartialEq, Debug)]
-enum Color {
-    White,
-    Black
-}
-
-#[derive(Hash, Eq, PartialEq, Debug)]
-struct Position {
-    row: char, 
-    column: i8 
-}
-
-impl Position {
-    fn new(_pos: String) -> Result<Self, &'static str> {
-
-        // Checks if String is a valid character length
-        if _pos.chars().count() == 2 {
-
-            // Creates variables
-            let mut _row: char = Default::default();
-            let mut _column: i8 = Default::default();
-
-            // Loops through characters
-            for _char in _pos.chars() {
-                let _possible_number = _char.to_digit(10);
-                
-                // Checks if character is a number 0-9, if not, set _row to character if character is a-h
-                match _possible_number {
-                    Some(digit) =>
-                        if digit + 1 <= 8 {
-                            _column = (digit + 1) as i8
-                        },
-                    None => 
-                        if _row == Default::default() && _char.to_digit(18).unwrap() - 10 >= 0 {
-                            _row = _char;
+        let mut output: String;
+        for x in 1..9 {
+            for y in 1..9 {
+                let piece: &str = match self.board.get( &Position { row: x, column: y} ) {
+                    Some(piece) => {
+                        match piece.role {
+                            Role::King => "K",
+                            Role::Queen => "Q",
+                            Role::Rook => "R",
+                            Role::Bishop => "B",
+                            Role::Knight => "K",
+                            Role::Pawn => "P"
                         }
+                    },
+                    None => "*"
                 };
-            };
 
-            // Checks if both _row and _column has gotten values
-            if _row != Default::default() || _column != Default::default() {
-                Self {
-                    row: _row, 
-                    column: _column 
-                };
-            };
+                // Adds unicode character
+                output.push_str(&String::from(format!("{} ", piece)));
+            }
+
+            // New line
+            output.push_str(&String::from(format!("\n")));
         }
-
-        // Returns error if String is not valid
-        return Err("Not a valid input");
-    }
-}
-
-#[derive(Hash, Eq, PartialEq, Debug)]
-struct Piece {
-    color: Color
-}
-
-impl Piece {
-    fn get_possible_moves(&self) -> Option<HashSet<Position>> {
-        None
+        write!(f, "{}", output)
     }
 }
 
@@ -209,7 +232,7 @@ impl Piece {
 #[cfg(test)]
 mod tests {
     use super::Game;
-    use super::GameState;
+    use super::gamestate::GameState;
 
     // check test framework
     #[test]
