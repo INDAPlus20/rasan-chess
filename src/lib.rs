@@ -192,8 +192,6 @@ impl Game {
     }
 }
 
-/// Implement print routine for Game.
-/// 
 /// Output example:
 /// |:----------------------:|
 /// | R  Kn B  K  Q  B  Kn R |
@@ -207,23 +205,24 @@ impl Game {
 /// |:----------------------:|
 impl fmt::Debug for Game {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        /* build board representation string */
+
+        // Output string
         let mut output: String = Default::default();
 
-        for x in 1..9 {
+        for x in (1..9).rev() {
             for y in 1..9 {
                 let piece: &str = match self.board.get( &Position { row: x, column: y} ) {
                     Some(piece) => {
                         match piece.role {
-                            Role::King => "K",
-                            Role::Queen => "Q",
-                            Role::Rook => "R",
-                            Role::Bishop => "B",
-                            Role::Knight => "K",
-                            Role::Pawn => "P"
+                            Role::King => "K ",
+                            Role::Queen => "Q ",
+                            Role::Rook => "R ",
+                            Role::Bishop => "B ",
+                            Role::Knight => "Kn",
+                            Role::Pawn => "P "
                         }
                     },
-                    None => "*"
+                    None => "* "
                 };
 
                 // Adds unicode character
@@ -236,6 +235,8 @@ impl fmt::Debug for Game {
         write!(f, "{}", output)
     }
 }
+
+
 
 // --------------------------
 // ######### TESTS ##########
@@ -257,7 +258,31 @@ mod tests {
     #[test]
     fn game_in_progress_after_init() {
 
-        let game = Game::new();
+        let mut game = Game::new();
+        println!("{:?}", game);
+
+        game.make_move("b1".to_string(), "a3".to_string());
+        println!("{:?}", game);
+
+        game.make_move("b8".to_string(), "a6".to_string());
+        println!("{:?}", game);
+
+        game.make_move("c2".to_string(), "c3".to_string());
+        println!("{:?}", game);
+
+        game.make_move("a6".to_string(), "c5".to_string());
+        println!("{:?}", game);
+
+        game.make_move("d2".to_string(), "d4".to_string());
+        println!("{:?}", game);
+
+        game.make_move("d7".to_string(), "d5".to_string());
+        println!("{:?}", game);
+
+        game.make_move("d4".to_string(), "c5".to_string());
+        println!("{:?}", game);
+
+        println!("{:?}", game.get_possible_moves("d5".to_string()));
 
         assert_eq!(game.get_game_state(), GameState::InProgress);
     }

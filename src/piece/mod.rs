@@ -34,7 +34,7 @@ impl Piece {
                     None => ()
                 }
 
-                return Some(_moves);
+                _moves
             },
     
             Role::Queen => {
@@ -50,7 +50,7 @@ impl Piece {
                     None => ()
                 }
 
-                return Some(_moves);
+                _moves
             },
     
             Role::Rook => {
@@ -85,6 +85,10 @@ impl Piece {
         return Some(moves);
     }
 
+    pub fn is_threatened() -> Option<Vec<Position>> {
+        return None;
+    }
+
     fn position_available(&self, _position: Position, board: &HashMap<Position, Piece>) -> bool {
         let mut position_available: bool;
     
@@ -108,6 +112,12 @@ impl Piece {
     }
 }
 
+
+
+// -----------------------------------
+// ######### MOVEMENT LOGIC ##########
+// -----------------------------------
+
 fn get_possible_moves_straight(_piece: &Piece, max_steps: i8, board: &HashMap<Position, Piece>) ->  Option<Vec<Position>> {
     let mut moves: Vec<Position> = Vec::new();
 
@@ -130,7 +140,7 @@ fn get_possible_moves_straight(_piece: &Piece, max_steps: i8, board: &HashMap<Po
 
         // Check if blockage has been reached previous iteration of loop
         if !n_stopped {
-            if _piece.position_available( Position { row: _piece.position.row - step, column: _piece.position.column }, board){
+            if _piece.position_available( Position { row: _piece.position.row - step, column: _piece.position.column }, board) {
                 moves.push( Position { row: _piece.position.row - step, column: _piece.position.column } );
             } else {
                 n_stopped = true;
@@ -139,7 +149,7 @@ fn get_possible_moves_straight(_piece: &Piece, max_steps: i8, board: &HashMap<Po
 
         // Check if blockage has been reached previous iteration of loop
         if !w_stopped {
-            if _piece.position_available( Position { row: _piece.position.row, column: _piece.position.column - step }, board){
+            if _piece.position_available( Position { row: _piece.position.row, column: _piece.position.column - step }, board) {
                 moves.push( Position { row: _piece.position.row, column: _piece.position.column - step } );
             } else {
                 w_stopped = true;
@@ -148,7 +158,7 @@ fn get_possible_moves_straight(_piece: &Piece, max_steps: i8, board: &HashMap<Po
 
         // Check if blockage has been reached previous iteration of loop
         if !s_stopped {
-            if _piece.position_available( Position { row: _piece.position.row + step, column: _piece.position.column }, board){
+            if _piece.position_available( Position { row: _piece.position.row + step, column: _piece.position.column }, board) {
                 moves.push( Position { row: _piece.position.row + step, column: _piece.position.column } );
             } else {
                 s_stopped = true;
@@ -157,7 +167,7 @@ fn get_possible_moves_straight(_piece: &Piece, max_steps: i8, board: &HashMap<Po
 
         // Check if blockage has been reached previous iteration of loop
         if !e_stopped {
-            if _piece.position_available( Position { row: _piece.position.row, column: _piece.position.column + step }, board){
+            if _piece.position_available( Position { row: _piece.position.row, column: _piece.position.column + step }, board) {
                 moves.push( Position { row: _piece.position.row, column: _piece.position.column + step } );
             } else {
                 e_stopped = true;
@@ -193,7 +203,7 @@ fn get_possible_moves_diagonal(_piece: &Piece, max_steps: i8, board: &HashMap<Po
 
         // Check if blockage has been reached previous iteration of loop
         if !nw_stopped {
-            if _piece.position_available( Position { row: _piece.position.row - step, column: _piece.position.column - step }, board){
+            if _piece.position_available( Position { row: _piece.position.row - step, column: _piece.position.column - step }, board) {
                 moves.push( Position { row: _piece.position.row - step, column: _piece.position.column - step } );
             } else {
                 nw_stopped = true;
@@ -202,7 +212,7 @@ fn get_possible_moves_diagonal(_piece: &Piece, max_steps: i8, board: &HashMap<Po
 
         // Check if blockage has been reached previous iteration of loop
         if !ne_stopped {
-            if _piece.position_available( Position { row: _piece.position.row - step, column: _piece.position.column + step }, board){
+            if _piece.position_available( Position { row: _piece.position.row - step, column: _piece.position.column + step }, board) {
                 moves.push( Position { row: _piece.position.row - step, column: _piece.position.column + step } );
             } else {
                 nw_stopped = true;
@@ -211,7 +221,7 @@ fn get_possible_moves_diagonal(_piece: &Piece, max_steps: i8, board: &HashMap<Po
 
         // Check if blockage has been reached previous iteration of loop
         if !sw_stopped {
-            if _piece.position_available( Position { row: _piece.position.row + step, column: _piece.position.column - step }, board){
+            if _piece.position_available( Position { row: _piece.position.row + step, column: _piece.position.column - step }, board) {
                 moves.push( Position { row: _piece.position.row + step, column: _piece.position.column - step } );
             } else {
                 nw_stopped = true;
@@ -220,7 +230,7 @@ fn get_possible_moves_diagonal(_piece: &Piece, max_steps: i8, board: &HashMap<Po
 
         // Check if blockage has been reached previous iteration of loop
         if !nw_stopped {
-            if _piece.position_available( Position { row: _piece.position.row + step, column: _piece.position.column + step }, board){
+            if _piece.position_available( Position { row: _piece.position.row + step, column: _piece.position.column + step }, board) {
                 moves.push( Position { row: _piece.position.row + step, column: _piece.position.column + step } );
             } else {
                 nw_stopped = true;
@@ -236,35 +246,35 @@ fn get_possible_moves_diagonal(_piece: &Piece, max_steps: i8, board: &HashMap<Po
 fn get_possible_moves_knight(_piece: &Piece, board: &HashMap<Position, Piece>) -> Option<Vec<Position>> {
     let mut moves: Vec<Position> = Vec::new();
 
-    if _piece.position_available( Position { row: _piece.position.row - 2, column: _piece.position.column - 1 }, board){
+    if _piece.position_available( Position { row: _piece.position.row - 2, column: _piece.position.column - 1 }, board) {
         moves.push( Position { row: _piece.position.row - 2, column: _piece.position.column - 1 } );
     }
 
-    if _piece.position_available( Position { row: _piece.position.row - 1, column: _piece.position.column - 2 }, board){
+    if _piece.position_available( Position { row: _piece.position.row - 1, column: _piece.position.column - 2 }, board) {
         moves.push( Position { row: _piece.position.row - 1, column: _piece.position.column - 2 } );
     }
 
-    if _piece.position_available( Position { row: _piece.position.row - 2, column: _piece.position.column + 1 }, board){
+    if _piece.position_available( Position { row: _piece.position.row - 2, column: _piece.position.column + 1 }, board) {
         moves.push( Position { row: _piece.position.row - 2, column: _piece.position.column + 1 } );
     }
 
-    if _piece.position_available( Position { row: _piece.position.row - 1, column: _piece.position.column + 2 }, board){
+    if _piece.position_available( Position { row: _piece.position.row - 1, column: _piece.position.column + 2 }, board) {
         moves.push( Position { row: _piece.position.row - 1, column: _piece.position.column + 2 } );
     }
 
-    if _piece.position_available( Position { row: _piece.position.row + 2, column: _piece.position.column - 1 }, board){
+    if _piece.position_available( Position { row: _piece.position.row + 2, column: _piece.position.column - 1 }, board) {
         moves.push( Position { row: _piece.position.row + 2, column: _piece.position.column - 1 } );
     }
 
-    if _piece.position_available( Position { row: _piece.position.row + 1, column: _piece.position.column - 2 }, board){
+    if _piece.position_available( Position { row: _piece.position.row + 1, column: _piece.position.column - 2 }, board) {
         moves.push( Position { row: _piece.position.row + 1, column: _piece.position.column - 2 } );
     }
 
-    if _piece.position_available( Position { row: _piece.position.row + 2, column: _piece.position.column + 1 }, board){
+    if _piece.position_available( Position { row: _piece.position.row + 2, column: _piece.position.column + 1 }, board) {
         moves.push( Position { row: _piece.position.row + 2, column: _piece.position.column + 1 } );
     }
 
-    if _piece.position_available( Position { row: _piece.position.row + 1, column: _piece.position.column + 2 }, board){
+    if _piece.position_available( Position { row: _piece.position.row + 1, column: _piece.position.column + 2 }, board) {
         moves.push( Position { row: _piece.position.row + 1, column: _piece.position.column + 2 } );
     }
 
@@ -276,15 +286,15 @@ fn get_possible_moves_pawn(_piece: &Piece, board: &HashMap<Position, Piece>) -> 
     let mut direction: i8;
 
     if _piece.color == Color::White {
-        direction = -1;
-    } else {
         direction = 1;
+    } else {
+        direction = -1;
     }
 
     if _piece.position_available( Position { row: _piece.position.row + direction, column: _piece.position.column, }, board) {
         moves.push( Position { row: _piece.position.row + direction, column: _piece.position.column, } );
 
-        if !_piece.has_moved && _piece.position_available( Position { row: _piece.position.row + direction * 2, column: _piece.position.column, }, board ){
+        if !_piece.has_moved && _piece.position_available( Position { row: _piece.position.row + direction * 2, column: _piece.position.column, }, board ) {
             moves.push( Position { row: _piece.position.row + direction * 2, column: _piece.position.column, } );
         }
     }
