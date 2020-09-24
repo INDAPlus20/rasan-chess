@@ -86,6 +86,11 @@ impl Game {
     /// move a piece and return the resulting state of the game.
     pub fn make_move(&mut self, _from: String, _to: String) -> Option<GameState> {
 
+        // Game is either over or waiting for promotion
+        if self.state == GameState::GameOver || self.state == GameState::Promotion {
+            return Some(self.state);
+        }
+
         // Convert String _from to Position
         let from_pos: Position; 
         match Position::new(_from) {
@@ -129,6 +134,11 @@ impl Game {
                             // Sets new place (inside piece)
                             _piece.position = to_pos.clone();
 
+                            // Check if piece is pawn ready to be promoted
+                            if _piece.role == Role::Pawn && (_piece.position.row == 1 || _piece.position.row == 8) {
+                                self.state = GameState::Promotion;
+                            }
+
                             // Inserts piece in board
                             self.board.insert(to_pos, _piece);
 
@@ -162,8 +172,41 @@ impl Game {
     }
 
     /// Set the piece type that a peasant becames following a promotion.
-    pub fn set_promotion(&mut self, _piece: String) -> () {
-        ()
+    pub fn set_promotion(&mut self, _pos: String, _role: Role) -> () {
+        if self.state != GameState::Promotion || _role == Role::Pawn || _role == Role::King {
+            println!("Promotion not allowed");
+            return;
+        }
+
+        // Convert String _to to Position
+        let pos: Position; 
+        match Position::new(_pos) {
+            Some(position) => pos = position,
+            None => return 
+        };
+
+        // Check if piece exists at position, If, remove it to replace it
+        match self.board.remove(&pos) {
+            Some(piece) => {
+                if piece.color == self.active_color && piece.role == Role::Pawn && (piece.position.row == 1 || piece.position.row == 8) {
+
+                    // Insert new piece
+                    self.board.insert(piece.position.clone(), Piece {
+                        color: piece.color,
+                        role: _role,
+                        position: piece.position,
+                        has_moved: true
+                    });
+
+                } else {
+                    println!("Not a valid piece")
+                };
+            },
+            None => println!("Not a valid position")
+        }
+
+        // Continue game
+        self.state = GameState::InProgress;
     }
 
     /// Get the current game state.

@@ -85,12 +85,13 @@ impl Piece {
         return Some(moves);
     }
 
-    pub fn is_threatened() -> Option<Vec<Position>> {
-        return None;
-    }
-
     fn position_available(&self, _position: Position, board: &HashMap<Position, Piece>) -> bool {
         let mut position_available: bool;
+
+        // If position is invalid return false
+        if !_position.clone().is_valid() {
+            return false;
+        }
     
         // Check if Position is occupied by same color
         match board.get(&_position) {
@@ -142,6 +143,11 @@ fn get_possible_moves_straight(_piece: &Piece, max_steps: i8, board: &HashMap<Po
         if !n_stopped {
             if _piece.position_available( Position { row: _piece.position.row - step, column: _piece.position.column }, board) {
                 moves.push( Position { row: _piece.position.row - step, column: _piece.position.column } );
+
+                // If it hit another piece, stop
+                if board.contains_key( &Position { row: _piece.position.row - step, column: _piece.position.column } ) {
+                    n_stopped = true;
+                }
             } else {
                 n_stopped = true;
             }
@@ -151,6 +157,11 @@ fn get_possible_moves_straight(_piece: &Piece, max_steps: i8, board: &HashMap<Po
         if !w_stopped {
             if _piece.position_available( Position { row: _piece.position.row, column: _piece.position.column - step }, board) {
                 moves.push( Position { row: _piece.position.row, column: _piece.position.column - step } );
+
+                // If it hit another piece, stop
+                if board.contains_key( &Position { row: _piece.position.row, column: _piece.position.column - step } ) {
+                    w_stopped = true;
+                }
             } else {
                 w_stopped = true;
             }
@@ -160,6 +171,11 @@ fn get_possible_moves_straight(_piece: &Piece, max_steps: i8, board: &HashMap<Po
         if !s_stopped {
             if _piece.position_available( Position { row: _piece.position.row + step, column: _piece.position.column }, board) {
                 moves.push( Position { row: _piece.position.row + step, column: _piece.position.column } );
+
+                // If it hit another piece, stop
+                if board.contains_key( &Position { row: _piece.position.row + step, column: _piece.position.column } ) {
+                    s_stopped = true;
+                }
             } else {
                 s_stopped = true;
             }
@@ -169,6 +185,11 @@ fn get_possible_moves_straight(_piece: &Piece, max_steps: i8, board: &HashMap<Po
         if !e_stopped {
             if _piece.position_available( Position { row: _piece.position.row, column: _piece.position.column + step }, board) {
                 moves.push( Position { row: _piece.position.row, column: _piece.position.column + step } );
+
+                // If it hit another piece, stop
+                if board.contains_key( &Position { row: _piece.position.row, column: _piece.position.column + step } ) {
+                    e_stopped = true;
+                }
             } else {
                 e_stopped = true;
             }
@@ -205,8 +226,13 @@ fn get_possible_moves_diagonal(_piece: &Piece, max_steps: i8, board: &HashMap<Po
         if !nw_stopped {
             if _piece.position_available( Position { row: _piece.position.row - step, column: _piece.position.column - step }, board) {
                 moves.push( Position { row: _piece.position.row - step, column: _piece.position.column - step } );
+
+                // If it hit another piece, stop
+                if board.contains_key( &Position { row: _piece.position.row - step, column: _piece.position.column - step } ) {
+                    ne_stopped = true;
+                }
             } else {
-                nw_stopped = true;
+                ne_stopped = true;
             }
         }
 
@@ -214,6 +240,11 @@ fn get_possible_moves_diagonal(_piece: &Piece, max_steps: i8, board: &HashMap<Po
         if !ne_stopped {
             if _piece.position_available( Position { row: _piece.position.row - step, column: _piece.position.column + step }, board) {
                 moves.push( Position { row: _piece.position.row - step, column: _piece.position.column + step } );
+
+                // If it hit another piece, stop
+                if board.contains_key( &Position { row: _piece.position.row - step, column: _piece.position.column + step } ) {
+                    nw_stopped = true;
+                }
             } else {
                 nw_stopped = true;
             }
@@ -223,8 +254,13 @@ fn get_possible_moves_diagonal(_piece: &Piece, max_steps: i8, board: &HashMap<Po
         if !sw_stopped {
             if _piece.position_available( Position { row: _piece.position.row + step, column: _piece.position.column - step }, board) {
                 moves.push( Position { row: _piece.position.row + step, column: _piece.position.column - step } );
+
+                // If it hit another piece, stop
+                if board.contains_key( &Position { row: _piece.position.row + step, column: _piece.position.column - step } ) {
+                    se_stopped = true;
+                }
             } else {
-                nw_stopped = true;
+                se_stopped = true;
             }
         }
 
@@ -232,8 +268,13 @@ fn get_possible_moves_diagonal(_piece: &Piece, max_steps: i8, board: &HashMap<Po
         if !nw_stopped {
             if _piece.position_available( Position { row: _piece.position.row + step, column: _piece.position.column + step }, board) {
                 moves.push( Position { row: _piece.position.row + step, column: _piece.position.column + step } );
+
+                // If it hit another piece, stop
+                if board.contains_key( &Position { row: _piece.position.row + step, column: _piece.position.column + step } ) {
+                    sw_stopped = true;
+                }
             } else {
-                nw_stopped = true;
+                sw_stopped = true;
             }
         }
 
@@ -246,6 +287,7 @@ fn get_possible_moves_diagonal(_piece: &Piece, max_steps: i8, board: &HashMap<Po
 fn get_possible_moves_knight(_piece: &Piece, board: &HashMap<Position, Piece>) -> Option<Vec<Position>> {
     let mut moves: Vec<Position> = Vec::new();
 
+    // Hard-coded positions relative to knight
     if _piece.position_available( Position { row: _piece.position.row - 2, column: _piece.position.column - 1 }, board) {
         moves.push( Position { row: _piece.position.row - 2, column: _piece.position.column - 1 } );
     }
@@ -283,22 +325,30 @@ fn get_possible_moves_knight(_piece: &Piece, board: &HashMap<Position, Piece>) -
 
 fn get_possible_moves_pawn(_piece: &Piece, board: &HashMap<Position, Piece>) -> Option<Vec<Position>> {
     let mut moves: Vec<Position> = Vec::new();
-    let mut direction: i8;
 
-    if _piece.color == Color::White {
-        direction = 1;
-    } else {
-        direction = -1;
-    }
+    // Check direction
+    let direction: i8 = match _piece.color {
+        Color::White => 1,
+        Color::Black => -1
+    };
 
+    // Check if position forward is available
     if _piece.position_available( Position { row: _piece.position.row + direction, column: _piece.position.column, }, board) {
         moves.push( Position { row: _piece.position.row + direction, column: _piece.position.column, } );
 
-        if !_piece.has_moved && _piece.position_available( Position { row: _piece.position.row + direction * 2, column: _piece.position.column, }, board ) {
-            moves.push( Position { row: _piece.position.row + direction * 2, column: _piece.position.column, } );
+        // Check if position diagonal forward contains enemy piece
+        match board.get( &Position { row: _piece.position.row + direction, column: _piece.position.column + 1, } ) {
+            Some(piece) => (),
+            None => {
+                // Check if 2 positions forward is available
+                if !_piece.has_moved && _piece.position_available( Position { row: _piece.position.row + direction * 2, column: _piece.position.column, }, board ) {
+                    moves.push( Position { row: _piece.position.row + direction * 2, column: _piece.position.column, } );
+                };
+            }
         }
     }
 
+    // Check if position diagonal forward contains enemy piece
     match board.get( &Position { row: _piece.position.row + direction, column: _piece.position.column + 1, } ) {
         Some(piece) => {
             if piece.color != _piece.color {
@@ -308,6 +358,7 @@ fn get_possible_moves_pawn(_piece: &Piece, board: &HashMap<Position, Piece>) -> 
         None => ()
     }
 
+    // Check if position diagonal forward contains enemy piece
     match board.get( &Position { row: _piece.position.row + direction, column: _piece.position.column - 1, } ) {
         Some(piece) => {
             if piece.color != _piece.color {

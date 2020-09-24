@@ -1,7 +1,7 @@
 #[derive(Hash, Eq, PartialEq, Clone, Debug)]
 pub struct Position {
     pub row: i8, 
-    pub column: i8 
+    pub column: i8 // Represented as a letter in String
 }
 
 impl Position {
@@ -14,8 +14,10 @@ impl Position {
             let mut _row: i8;
             let mut _column: i8;
 
+            // Split String to characters
             let chars: Vec<char> = _pos.chars().collect();
 
+            // Convert letter character into i8 (easier to use in code)
             match chars[0] {
                 'a' => _column = 1,
                 'b' => _column = 2,
@@ -31,6 +33,7 @@ impl Position {
                 }
             };
 
+            // Convert character
             match chars[1].to_digit(10) {
                 Some(value) => {
                     if value > 8 || value < 1 {
@@ -46,21 +49,29 @@ impl Position {
                 }
             };
 
+            // Return position
             return Some(Position {
                 row: _row,
                 column: _column
             });
+
         } else {
             print!("Not a vaild position");
             return None;
         }
     }
 
+    // Convert position back to String
     pub fn to_string(self) -> String {
-        let mut _string: String;
+        return format!("{}{}", self.row.to_string(), self.column.to_string());
+    }
 
-        _string = format!("{}{}", self.row.to_string(), self.column.to_string());
-
-        return _string;
+    // Check if position is within board constraints
+    pub fn is_valid(self) -> bool {
+        if (self.row < 1 || self.row > 8 || self.column < 1 || self.column > 8) == true {
+            return false;
+        } else {
+            return true;
+        }
     }
 }
