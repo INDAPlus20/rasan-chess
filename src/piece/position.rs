@@ -1,46 +1,66 @@
-#[derive(Hash, Eq, PartialEq, Debug)]
+#[derive(Hash, Eq, PartialEq, Clone, Debug)]
 pub struct Position {
     pub row: i8, 
     pub column: i8 
 }
 
 impl Position {
-    pub fn new(_pos: String) -> Result<Self, &'static str> {
+    pub fn new(_pos: String) -> Option<Self> {
 
         // Checks if String is a valid character length
         if _pos.chars().count() == 2 {
 
             // Creates variables
-            let mut _row: i8 = Default::default();
-            let mut _column: i8 = Default::default();
+            let mut _row: i8;
+            let mut _column: i8;
 
-            // Loops through characters
-            for _char in _pos.chars() {
-                let _possible_number = _char.to_digit(10);
-                
-                // Checks if character is a number 0-9, if not, set _row to character if character is a-h
-                match _possible_number {
-                    Some(digit) =>
-                        if digit + 1 <= 8 {
-                            _column = (digit + 1) as i8
-                        },
-                    None => 
-                        if _row == Default::default() && _char.to_digit(18).unwrap() - 10 >= 0 {
-                            _row = (_char.to_digit(18).unwrap() - 10) as i8;
-                        }
-                };
+            let chars: Vec<char> = _pos.chars().collect();
+
+            match chars[0] {
+                'a' => _column = 1,
+                'b' => _column = 2,
+                'c' => _column = 3,
+                'd' => _column = 4,
+                'e' => _column = 5,
+                'f' => _column = 6,
+                'g' => _column = 7,
+                'h' => _column = 8,
+                _ => {
+                    print!("Not a vaild position");
+                    return None;
+                }
             };
 
-            // Checks if both _row and _column has gotten values
-            if _row != Default::default() || _column != Default::default() {
-                Self {
-                    row: _row, 
-                    column: _column 
-                };
+            match chars[1].to_digit(10) {
+                Some(value) => {
+                    if value > 8 || value < 1 {
+                        print!("Not a vaild position");
+                        return None;
+                    } else {
+                        _row = value as i8;
+                    };
+                },
+                None => {
+                    print!("Not a vaild position");
+                    return None;
+                }
             };
+
+            return Some(Position {
+                row: _row,
+                column: _column
+            });
+        } else {
+            print!("Not a vaild position");
+            return None;
         }
+    }
 
-        // Returns error if String is not valid
-        return Err("Not a valid input");
+    pub fn to_string(self) -> String {
+        let mut _string: String;
+
+        _string = format!("{}{}", self.row.to_string(), self.column.to_string());
+
+        return _string;
     }
 }

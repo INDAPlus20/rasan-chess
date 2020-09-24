@@ -16,63 +16,70 @@ use gamestate::GameState;
  */
 
 pub struct Game {
-    /* save board, active colour, ... */
     state: GameState,
     board: HashMap<Position, Piece>,
     active_color: Color
 }
 
 impl Game {
-    /// Initialises a new board with pieces.
+
+    // Initialises a new board with pieces.
     pub fn new() -> Game {
-        Game {
-            /* initialise board, set active colour to white, ... */
+
+        //Board
+        let mut _board: HashMap<Position, Piece> = HashMap::new();
+
+        // Insert pawns
+        for x in 1..9 {
+            Self::insert_piece(&mut _board, Color::White, Role::Pawn, Position {row: 2, column: x});
+            Self::insert_piece(&mut _board, Color::Black, Role::Pawn, Position {row: 7, column: x});
+        }
+
+        // Insert rooks
+        Self::insert_piece(&mut _board, Color::Black, Role::Rook, Position {row: 8, column: 1});
+        Self::insert_piece(&mut _board, Color::Black, Role::Rook, Position {row: 8, column: 8});
+        Self::insert_piece(&mut _board, Color::White, Role::Rook, Position {row: 1, column: 1});
+        Self::insert_piece(&mut _board, Color::White, Role::Rook, Position {row: 1, column: 8});
+
+        // Insert knights
+        Self::insert_piece(&mut _board, Color::Black, Role::Knight, Position {row: 8, column: 2});
+        Self::insert_piece(&mut _board, Color::Black, Role::Knight, Position {row: 8, column: 7});
+        Self::insert_piece(&mut _board, Color::White, Role::Knight, Position {row: 1, column: 2});
+        Self::insert_piece(&mut _board, Color::White, Role::Knight, Position {row: 1, column: 7});
+
+        // Insert bishops
+        Self::insert_piece(&mut _board, Color::Black, Role::Bishop, Position {row: 8, column: 3});
+        Self::insert_piece(&mut _board, Color::Black, Role::Bishop, Position {row: 8, column: 6});
+        Self::insert_piece(&mut _board, Color::White, Role::Bishop, Position {row: 1, column: 3});
+        Self::insert_piece(&mut _board, Color::White, Role::Bishop, Position {row: 1, column: 6});
+
+        // Insert kings
+        Self::insert_piece(&mut _board, Color::Black, Role::King, Position {row: 8, column: 4});
+        Self::insert_piece(&mut _board, Color::Black, Role::King, Position {row: 1, column: 5});
+
+        // Insert queens
+        Self::insert_piece(&mut _board, Color::Black, Role::Queen, Position {row: 8, column: 5});
+        Self::insert_piece(&mut _board, Color::Black, Role::Queen, Position {row: 1, column: 4});
+
+        // Initialize Game
+        return Game {
             state: GameState::InProgress,
-            board: setup_board(),
+            board: _board,
             active_color: Color::White
         }
     }
 
-    fn setup_board() -> HashMap<Position, Piece> {
-        let mut board: HashMap<Position, Piece> = HashMap::new();
-
-        // Adds pawns to board
-        for x in 1..9 {
-
-            // Insert white pawns
-            let white_pawn_position = Position {
-                row: 7,
-                column: x
-            };
-
-            board.insert(
-                white_pawn_position,
-                Piece {
-                    color: Color::White,
-                    role: Role::Pawn,
-                    position: white_pawn_position,
-                    has_moved: false
-                }
-            );
-
-            // Insert black pawns
-            let black_pawn_position = Position {
-                row: 2,
-                column: x
-            };
-
-            board.insert(
-                black_pawn_position,
-                Piece {
-                    color: Color::Black,
-                    role: Role::Pawn,
-                    position: black_pawn_position,
-                    has_moved: false
-                }
-            );
-        }
-
-        return board;
+    // Function to insert pieces
+    fn insert_piece(board: &mut HashMap<Position, Piece>,_color: Color, _role: Role, _position: Position) {
+        board.insert(
+            _position.clone(),
+            Piece {
+                color: _color,
+                role: _role,
+                position: _position,
+                has_moved: false
+            }
+        );
     }
 
     /// If the current game state is InProgress and the move is legal, 
@@ -80,71 +87,78 @@ impl Game {
     pub fn make_move(&mut self, _from: String, _to: String) -> Option<GameState> {
 
         // Convert String _from to Position
-        let _from_pos: Position; 
+        let from_pos: Position; 
         match Position::new(_from) {
-            Ok(position) => _from_pos = position,
-            Err(e) => {
-                println!("{:?}", e);
-                return Some(self.state);
-            }
+            Some(position) => from_pos = position,
+            None => return Some(self.state)
         };
 
         // Convert String _to to Position
-        let _to_pos: Position; 
+        let to_pos: Position; 
         match Position::new(_to) {
-            Ok(position) => _to_pos = position,
-            Err(e) => {
-                println!("{:?}", e);
-                return Some(self.state);
-            }
+            Some(position) => to_pos = position,
+            None => return Some(self.state)
         };
 
         // Get piece at position
-        match self.board.get(&_from_pos) {
-            Some(_piece_ref) => 
+        match self.board.get(&from_pos) {
+            Some(piece) => {
 
                 // Check if piece is of correct color
-                if _piece_ref.color != self.active_color {
+                if piece.color != self.active_color { 
+                    println!("Not your turn");
+                    return Some(self.state);
+                }
 
-                    // Get possible moves
-                    match _piece_ref.get_possible_moves(self.board) {
-                        Some(moves) => 
+                // Get possible moves
+                match piece.get_possible_moves(&self.board) {
+                    Some(moves) => {
 
-                            // Check if desired move is possible
-                            match moves.get(&_to_pos) {
-                                Some(_piece_pos) => {
+                        // Check if desired move is possible
+                        if moves.contains(&to_pos) {
+                            
+                            // Moves piece and possibly removes another piece
+                            self.board.remove(&to_pos);
+                            let mut _piece: piece::Piece = self.board.remove(&from_pos).unwrap();
 
-                                    // Check if own king becomes threatened
-                                
-                                    // Moves piece and possibly removes another piece
-                                    self.board.remove(&_to_pos);
-                                    let mut _piece: piece::Piece = self.board.remove(&_from_pos).unwrap();
+                            // Modifies piece
+                            if _piece.has_moved != true {
+                                _piece.has_moved = true;
+                            };
 
-                                    // Set has_moved (from original position) to true
-                                    if _piece.has_moved != true {
-                                        _piece.has_moved = true;
-                                    }
+                            // Sets new place (inside piece)
+                            _piece.position = to_pos.clone();
 
-                                    self.board.insert(_to_pos, _piece);
+                            // Inserts piece in board
+                            self.board.insert(to_pos, _piece);
 
-                                    // Switches active color
-                                    self.active_color = match self.active_color {
-                                        Color::White => Color::Black,
-                                        Color::Black => Color::White
-                                    }
-                                },
-                                None => println!("Illegal move")
-                            },
-                        None => println!("No possible moves")
-                    };
-                },
-            None => println!("No piece at speficied position")
-        };
+                            // Switches active color
+                            self.active_color = match self.active_color {
+                                Color::White => Color::Black,
+                                Color::Black => Color::White
+                            };
+
+                        } else {
+                            println!("Illegal move");
+                            return Some(self.state);
+                        };
+                    },
+                    None => {
+                        println!("No possible moves");
+                        return Some(self.state);
+                    }
+                }
+            },
+            None => {
+                println!("No piece at speficied position");
+                return Some(self.state);
+            }
+        }
 
         // Check if king is threatened
 
         // Check game state
-        return None;
+        return Some(self.state);
     }
 
     /// Set the piece type that a peasant becames following a promotion.
@@ -163,19 +177,16 @@ impl Game {
     /// (optional) Don't forget to include en passent and castling.
     pub fn get_possible_moves(&self, _position: String) -> Option<Vec<Position>> {
 
-        // Convert String _from to Position
-        let position: Position; 
+        // Convert String _to to Position
+        let _pos: Position; 
         match Position::new(_position) {
-            Ok(position) => position = position,
-            Err(e) => {
-                println!("{:?}", e);
-                return None;
-            }
+            Some(position) => _pos = position,
+            None => return None
         };
 
         // Check position
-        match self.board.get(&position) {
-            Some(piece) => return piece.get_possible_moves(self.board),
+        match self.board.get(&_pos) {
+            Some(piece) => return piece.get_possible_moves(&self.board),
             None => return None
         };
     }
@@ -197,7 +208,8 @@ impl Game {
 impl fmt::Debug for Game {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         /* build board representation string */
-        let mut output: String;
+        let mut output: String = Default::default();
+
         for x in 1..9 {
             for y in 1..9 {
                 let piece: &str = match self.board.get( &Position { row: x, column: y} ) {

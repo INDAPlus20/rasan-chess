@@ -8,6 +8,7 @@ use role::Role;
 use position::Position;
 use color::Color;
 
+#[derive(Clone, Debug)]
 pub struct Piece {
     pub color: Color,
     pub role: Role,
@@ -16,64 +17,64 @@ pub struct Piece {
 }
 
 impl Piece {
-    pub fn get_possible_moves(&self, board: HashMap<Position, Piece>) -> Option<Vec<Position>> {
+    pub fn get_possible_moves(&self, board: &HashMap<Position, Piece>) -> Option<Vec<Position>> {
     
         // Check self.role and return possible moves for that role at self.position
         let mut moves: Vec<Position> = match self.role {
-            King => {
+            Role::King => {
                 let mut _moves: Vec<Position> = Vec::new();
 
                 match get_possible_moves_diagonal(self, 1, board) {
-                    Some(moves) => _moves.append(&mut moves),
+                    Some(mut moves) => _moves.append(&mut moves),
                     None => () 
                 }
 
                 match get_possible_moves_straight(self, 1, board) {
-                    Some(moves) => _moves.append(&mut moves),
+                    Some(mut moves) => _moves.append(&mut moves),
                     None => ()
                 }
 
                 return Some(_moves);
             },
     
-            Queen => {
+            Role::Queen => {
                 let mut _moves: Vec<Position> = Vec::new();
 
                 match get_possible_moves_diagonal(self, 7, board) {
-                    Some(moves) => _moves.append(&mut moves),
+                    Some(mut moves) => _moves.append(&mut moves),
                     None => () 
                 }
 
                 match get_possible_moves_straight(self, 7, board) {
-                    Some(moves) => _moves.append(&mut moves),
+                    Some(mut moves) => _moves.append(&mut moves),
                     None => ()
                 }
 
                 return Some(_moves);
             },
     
-            Rook => {
+            Role::Rook => {
                 match get_possible_moves_straight(self, 7, board) {
                     Some(moves) => moves,
                     None => Vec::new(),
                 }
             },
     
-            Bishop => {
+            Role::Bishop => {
                 match get_possible_moves_diagonal(self, 7, board) {
                     Some(moves) => moves,
                     None => Vec::new(),
                 }
             },
     
-            Knight => {
+            Role::Knight => {
                 match get_possible_moves_knight(self, board) {
                     Some(moves) => moves,
                     None => Vec::new(),
                 }
             },
     
-            Pawn => {
+            Role::Pawn => {
                 match get_possible_moves_pawn(self, board) {
                     Some(moves) => moves,
                     None => Vec::new(),
@@ -84,7 +85,7 @@ impl Piece {
         return Some(moves);
     }
 
-    fn position_available(&self, _position: Position, board: HashMap<Position, Piece>) -> bool {
+    fn position_available(&self, _position: Position, board: &HashMap<Position, Piece>) -> bool {
         let mut position_available: bool;
     
         // Check if Position is occupied by same color
@@ -107,7 +108,7 @@ impl Piece {
     }
 }
 
-fn get_possible_moves_straight(_piece: &Piece, max_steps: i8, board: HashMap<Position, Piece>) ->  Option<Vec<Position>> {
+fn get_possible_moves_straight(_piece: &Piece, max_steps: i8, board: &HashMap<Position, Piece>) ->  Option<Vec<Position>> {
     let mut moves: Vec<Position> = Vec::new();
 
     // Directions
@@ -170,7 +171,7 @@ fn get_possible_moves_straight(_piece: &Piece, max_steps: i8, board: HashMap<Pos
     return Some(moves);
 }
 
-fn get_possible_moves_diagonal(_piece: &Piece, max_steps: i8, board: HashMap<Position, Piece>) ->  Option<Vec<Position>> {
+fn get_possible_moves_diagonal(_piece: &Piece, max_steps: i8, board: &HashMap<Position, Piece>) ->  Option<Vec<Position>> {
     let mut moves: Vec<Position> = Vec::new();
 
     // Directions
@@ -232,7 +233,7 @@ fn get_possible_moves_diagonal(_piece: &Piece, max_steps: i8, board: HashMap<Pos
     return Some(moves);
 }
 
-fn get_possible_moves_knight(_piece: &Piece, board: HashMap<Position, Piece>) -> Option<Vec<Position>> {
+fn get_possible_moves_knight(_piece: &Piece, board: &HashMap<Position, Piece>) -> Option<Vec<Position>> {
     let mut moves: Vec<Position> = Vec::new();
 
     if _piece.position_available( Position { row: _piece.position.row - 2, column: _piece.position.column - 1 }, board){
@@ -270,7 +271,7 @@ fn get_possible_moves_knight(_piece: &Piece, board: HashMap<Position, Piece>) ->
     return Some(moves);
 }
 
-fn get_possible_moves_pawn(_piece: &Piece, board: HashMap<Position, Piece>) -> Option<Vec<Position>> {
+fn get_possible_moves_pawn(_piece: &Piece, board: &HashMap<Position, Piece>) -> Option<Vec<Position>> {
     let mut moves: Vec<Position> = Vec::new();
     let mut direction: i8;
 
