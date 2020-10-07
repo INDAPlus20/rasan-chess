@@ -18,7 +18,10 @@ use gamestate::GameState;
 pub struct Game {
     state: GameState,
     board: HashMap<Position, Piece>,
-    active_color: Color
+    active_color: Color,
+
+    white_king: &Piece,
+    black_King: &Piece
 }
 
 impl Game {
@@ -55,11 +58,15 @@ impl Game {
 
         // Insert kings
         Self::insert_piece(&mut _board, Color::Black, Role::King, Position {row: 8, column: 4});
-        Self::insert_piece(&mut _board, Color::Black, Role::King, Position {row: 1, column: 5});
+        Self::insert_piece(&mut _board, Color::White, Role::King, Position {row: 1, column: 5});
+
+        // Set references
+        white_king = _board.get(Position {row: 8, column: 4});
+        black_king = _board.get(Position {row: 1, column: 5});
 
         // Insert queens
         Self::insert_piece(&mut _board, Color::Black, Role::Queen, Position {row: 8, column: 5});
-        Self::insert_piece(&mut _board, Color::Black, Role::Queen, Position {row: 1, column: 4});
+        Self::insert_piece(&mut _board, Color::White, Role::Queen, Position {row: 1, column: 4});
 
         // Initialize Game
         return Game {
@@ -165,7 +172,19 @@ impl Game {
             }
         }
 
-        // Check if king is threatened
+        // Check if state should be changed
+        match active_color {
+            Color::Black => (
+                if !board.contains(black_king) {
+                    self.state = GameState::GameOver;
+                }
+            ),
+            Color::White => (
+                if !board.contains(white_king) {
+                    self.state = GameState::GameOver;
+                }
+            )
+        }
 
         // Check game state
         return Some(self.state);

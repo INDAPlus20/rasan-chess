@@ -2,6 +2,6 @@
 
 **Chess where the king is suicidal**
 
-All functions are default ones
-
-Msg me on Discord if you want to use my chess engine *(I have to add the GameOver condition)*.
+1. All functions are default ones.
+2. The active_color which is **not active** is the winner when the state switches to Game Over.
+3. Game ends when a king dies, but be careful, your king cannot predict the future of your moves.
